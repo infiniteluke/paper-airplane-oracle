@@ -57,6 +57,35 @@ body {
   font-style: italic;
 }
 
+.oracle-consult {
+  background: var(--accent-purple);
+  border: none;
+  color: var(--fg);
+  padding: 0.75rem 1.25rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.oracle-consult:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.oracle-reply {
+  margin-top: 1.5rem;
+  max-width: 32rem;
+  text-align: center;
+  font-size: 1.125rem;
+  line-height: 1.6;
+}
+
+.oracle-error {
+  margin-top: 1.5rem;
+  color: #d97a7a;
+  font-size: 0.875rem;
+}
+
 .oracle-footer {
   display: flex;
   justify-content: space-between;
