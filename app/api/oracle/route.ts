@@ -1,5 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { ORACLE_SYSTEM_PROMPT } from "@/lib/oracle/systemPrompt";
+import { promptForRound, type Round } from "@/lib/oracle/systemPrompt";
 import { directiveFor, leanFor, rollD20, type Lean } from "@/lib/oracle/dice";
 
 const MODEL = "claude-sonnet-4-5";
@@ -26,11 +26,13 @@ type ChatMessage = {
 type OracleRequest = {
   messages: ChatMessage[];
   role?: string;
+  round?: Round;
 };
 
 export async function POST(request: Request) {
   const body = (await request.json()) as OracleRequest;
   const messages = body.messages ?? [];
+  const round: Round = body.round === "B" ? "B" : "A";
 
   if (messages.length === 0 || messages[messages.length - 1].role !== "user") {
     return Response.json(
@@ -41,7 +43,7 @@ export async function POST(request: Request) {
 
   const roll = rollD20();
   const lean = leanFor(roll);
-  const system = `${ORACLE_SYSTEM_PROMPT}\n\n${directiveFor(roll)}`;
+  const system = `${promptForRound(round)}\n\n${directiveFor(roll)}`;
 
   const message = await client.messages.create({
     model: MODEL,
@@ -59,5 +61,5 @@ export async function POST(request: Request) {
   const reply = rawReply.replaceAll(FOLD_TOKEN, "").trim();
   const image = wantsFoldImage ? FOLD_IMAGES[lean] : undefined;
 
-  return Response.json({ reply, roll, lean, image });
+  return Response.json({ reply, roll, lean, round, image });
 }

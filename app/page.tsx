@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import type { Round } from "@/lib/oracle/systemPrompt";
 
 type OracleImage = {
   src: string;
@@ -14,15 +15,26 @@ type ChatMessage = {
   image?: OracleImage;
 };
 
-const STORAGE_KEY = "oracle:conversation:v1";
+type Conversations = Record<Round, ChatMessage[]>;
+
+const CONV_KEY = "oracle:conversations:v1";
+const ROUND_KEY = "oracle:round:v1";
 const ROLE_KEY = "oracle:role:v1";
+
+const EMPTY_CONVERSATIONS: Conversations = { A: [], B: [] };
 
 function randomConfidence() {
   return 90 + Math.floor(Math.random() * 10);
 }
 
+function isRound(value: unknown): value is Round {
+  return value === "A" || value === "B";
+}
+
 export default function Home() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [conversations, setConversations] =
+    useState<Conversations>(EMPTY_CONVERSATIONS);
+  const [round, setRound] = useState<Round>("A");
   const [role, setRole] = useState("");
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -30,14 +42,24 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  const messages = conversations[round];
+
   // Hydrate from localStorage post-mount: SSR has no `localStorage`, so we can't
   // read it during render without a hydration mismatch.
   useEffect(() => {
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
+      const storedConv = localStorage.getItem(CONV_KEY);
+      const storedRound = localStorage.getItem(ROUND_KEY);
       const storedRole = localStorage.getItem(ROLE_KEY);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      if (stored) setMessages(JSON.parse(stored) as ChatMessage[]);
+      if (storedConv) {
+        const parsed = JSON.parse(storedConv) as Partial<Conversations>;
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setConversations({
+          A: Array.isArray(parsed.A) ? parsed.A : [],
+          B: Array.isArray(parsed.B) ? parsed.B : [],
+        });
+      }
+      if (isRound(storedRound)) setRound(storedRound);
       if (storedRole) setRole(storedRole);
     } catch {
       // Ignore corrupted localStorage; start fresh.
@@ -47,8 +69,13 @@ export default function Home() {
 
   useEffect(() => {
     if (!hydrated) return;
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(messages));
-  }, [messages, hydrated]);
+    localStorage.setItem(CONV_KEY, JSON.stringify(conversations));
+  }, [conversations, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    localStorage.setItem(ROUND_KEY, round);
+  }, [round, hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -65,11 +92,12 @@ export default function Home() {
   async function send() {
     const trimmed = input.trim();
     if (!trimmed || loading) return;
-    const next: ChatMessage[] = [
-      ...messages,
+    const requestRound = round;
+    const nextHistory: ChatMessage[] = [
+      ...conversations[requestRound],
       { role: "user", content: trimmed },
     ];
-    setMessages(next);
+    setConversations((prev) => ({ ...prev, [requestRound]: nextHistory }));
     setInput("");
     setLoading(true);
     setError(null);
@@ -77,22 +105,29 @@ export default function Home() {
       const res = await fetch("/api/oracle", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messages: next, role }),
+        body: JSON.stringify({
+          messages: nextHistory,
+          role,
+          round: requestRound,
+        }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as {
         reply: string;
         image?: OracleImage;
       };
-      setMessages([
-        ...next,
-        {
-          role: "assistant",
-          content: data.reply,
-          confidence: randomConfidence(),
-          image: data.image,
-        },
-      ]);
+      setConversations((prev) => ({
+        ...prev,
+        [requestRound]: [
+          ...prev[requestRound],
+          {
+            role: "assistant",
+            content: data.reply,
+            confidence: randomConfidence(),
+            image: data.image,
+          },
+        ],
+      }));
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
@@ -101,7 +136,7 @@ export default function Home() {
   }
 
   function reset() {
-    setMessages([]);
+    setConversations((prev) => ({ ...prev, [round]: [] }));
     setError(null);
   }
 
@@ -116,6 +151,24 @@ export default function Home() {
     <div className="oracle-app">
       <header className="oracle-header">
         <h1>The Oracle</h1>
+        <div
+          className="oracle-rounds"
+          role="tablist"
+          aria-label="Round selector"
+        >
+          {(["A", "B"] as Round[]).map((r) => (
+            <button
+              key={r}
+              type="button"
+              role="tab"
+              aria-selected={round === r}
+              className={`oracle-round ${round === r ? "is-active" : ""}`}
+              onClick={() => setRound(r)}
+            >
+              Round {r}
+            </button>
+          ))}
+        </div>
       </header>
 
       <main className="oracle-main">
