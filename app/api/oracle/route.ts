@@ -7,8 +7,8 @@ const MODEL = "claude-sonnet-4-5";
 
 // The model self-reports which airplane type it actually recommended.
 // We key the image on the type, not the dice lean — the mapping of
-// biased/correct to dart/glider flips between rounds (Round A's CORRECT is
-// the glider; Round B's CORRECT is the dart).
+// take-to-fold flips between rounds (Round A's TAKE_1 is the glider;
+// Round B's TAKE_1 is the dart).
 type FoldKind = "DART" | "GLIDER";
 const FOLD_TAGGED_RE = /\[\[FOLD:(DART|GLIDER)\]\]/gi;
 const FOLD_ANY_RE = /\[\[FOLD(?::[A-Z]+)?\]\]/gi;
@@ -92,12 +92,14 @@ export async function POST(request: Request) {
   }
 
   const roll = rollD20();
+  console.log("roll", roll);
   const lean = leanFor(roll);
+  console.log("lean", lean);
   const system = `${promptForRound(round)}\n\n${directiveFor(roll)}`;
 
   const message = await client.messages.create({
     model: MODEL,
-    max_tokens: 256,
+    max_tokens: 512,
     system,
     messages: messages.map(sanitizeMessage),
   });
