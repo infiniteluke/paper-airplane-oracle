@@ -35,7 +35,14 @@ body {
   display: flex;
   flex-direction: column;
   padding: 2rem 1.25rem;
-  gap: 1.5rem;
+  gap: 1.25rem;
+}
+
+.oracle-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .oracle-header h1 {
@@ -44,46 +51,114 @@ body {
   letter-spacing: 0.05em;
 }
 
+.oracle-role {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  width: 14rem;
+  max-width: 50%;
+}
+
+.oracle-role::placeholder {
+  color: var(--muted);
+}
+
 .oracle-main {
   flex: 1;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.oracle-chat {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.5rem 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  min-height: 12rem;
 }
 
 .oracle-placeholder {
   color: var(--muted);
   font-style: italic;
+  margin: auto;
 }
 
-.oracle-consult {
-  background: var(--accent-purple);
-  border: none;
-  color: var(--fg);
-  padding: 0.75rem 1.25rem;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 1rem;
+.oracle-msg {
+  max-width: 85%;
+  padding: 0.7rem 0.95rem;
+  border-radius: 8px;
+  white-space: pre-wrap;
+  line-height: 1.55;
 }
 
-.oracle-consult:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
+.oracle-msg-user {
+  align-self: flex-end;
+  background: rgba(91, 58, 138, 0.25);
+  border: 1px solid rgba(91, 58, 138, 0.5);
 }
 
-.oracle-reply {
-  margin-top: 1.5rem;
-  max-width: 32rem;
-  text-align: center;
-  font-size: 1.125rem;
-  line-height: 1.6;
+.oracle-msg-assistant {
+  align-self: flex-start;
+  background: rgba(212, 162, 74, 0.08);
+  border: 1px solid rgba(212, 162, 74, 0.25);
+}
+
+.oracle-msg-loading {
+  align-self: flex-start;
+  color: var(--muted);
+  font-style: italic;
+  background: transparent;
+  border: 1px dashed var(--border);
 }
 
 .oracle-error {
-  margin-top: 1.5rem;
+  align-self: center;
   color: #d97a7a;
   font-size: 0.875rem;
+}
+
+.oracle-input {
+  display: flex;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.oracle-input textarea {
+  flex: 1;
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--fg);
+  padding: 0.6rem 0.75rem;
+  font: inherit;
+  resize: none;
+}
+
+.oracle-input textarea:focus {
+  outline: none;
+  border-color: var(--accent-purple);
+}
+
+.oracle-input button {
+  background: var(--accent-amber);
+  border: none;
+  color: #1a1208;
+  padding: 0.6rem 1.1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.oracle-input button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .oracle-footer {
