@@ -103,13 +103,6 @@ export default function Home() {
     <div className="oracle-app">
       <header className="oracle-header">
         <h1>The Oracle</h1>
-        <input
-          type="text"
-          className="oracle-role"
-          placeholder="Your role (optional)"
-          value={role}
-          onChange={(e) => setRole(e.target.value)}
-        />
       </header>
 
       <main className="oracle-main">
