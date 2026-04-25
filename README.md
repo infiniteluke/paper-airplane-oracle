@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# The Oracle
 
-## Getting Started
+A workshop game app: a chat interface that simulates an LLM giving confidently-stated, sometimes-wrong product advice about paper airplanes. The centerpiece of an exercise on vertical vs horizontal scaling of AI-augmented work.
 
-First, run the development server:
+The Oracle answers in 1–2 confident sentences. A server-side d20 roll decides whether each turn leans BIASED (planted-wrong) or CORRECT — the model itself doesn't know about the dice; it just receives a per-turn directive. The verbatim role-card prompt with all the planted answer pairs lives in [`lib/oracle/systemPrompt.ts`](lib/oracle/systemPrompt.ts).
+
+## Run it locally
+
+You'll need [Node.js 20+](https://nodejs.org). Everything else installs with `npm`.
+
+### 1. Get an Anthropic API key
+
+1. Sign in at [platform.anthropic.com](https://platform.anthropic.com).
+2. Go to **Settings → API Keys** and create a key. Copy it (starts with `sk-ant-`).
+3. Go to **Settings → Billing** and add **$5 of credit**. The workshop uses cents.
+
+### 2. Configure environment
+
+In the project root, copy the template:
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cp .env.example .env.local
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `.env.local` and paste your key:
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 3. Install and run
 
-## Learn More
+```bash
+npm install
+npm run dev
+```
 
-To learn more about Next.js, take a look at the following resources:
+Open [http://localhost:3000](http://localhost:3000). Ask The Oracle a question.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy to Vercel
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. Push this repo to GitHub.
+2. At [vercel.com/new](https://vercel.com/new), import the repo. Vercel auto-detects Next.js; defaults are fine.
+3. In the deploy screen, add the environment variable:
+   - `ANTHROPIC_API_KEY` = your `sk-ant-...` key
+4. Click **Deploy**. You'll get a public URL to share with the workshop.
 
-## Deploy on Vercel
+If you change the env var later, redeploy from the Vercel dashboard (Deployments → ⋯ → Redeploy).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## How the d20 mechanic works
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Every request rolls a d20 server-side ([`lib/oracle/dice.ts`](lib/oracle/dice.ts)).
+- Roll **< 14** → directive injected: lean BIASED for this turn (≈65% of turns).
+- Roll **≥ 14** → directive injected: lean CORRECT for this turn (≈35% of turns).
+- The directive is appended to the verbatim system prompt and tells the model never to mention it.
+- Conversation history is kept in the player's `localStorage` only — there is no server-side conversation store.
+
+## Workshop notes
+
+Players are told:
+
+- Each person gets one role card with their "expert knowledge." Don't share your role.
+- Build a paper airplane in steps: Research, Design, Manufacturing, Marketing, Product.
+- You **must** consult The Oracle when you need a resource (color, name, fold suggestions).
+- If The Oracle contradicts your expert knowledge — ignore it.
+
+The app behaves identically in both rounds. What changes is whether the team disciplines itself to stay in its lane. The constraint is human, not technological.
+
+## Project layout
+
+- `app/page.tsx` — chat UI (client component).
+- `app/api/oracle/route.ts` — POST handler that rolls the d20, injects the directive, calls Claude, returns the reply.
+- `app/layout.tsx`, `app/globals.css` — root layout, fonts (Cormorant Garamond + Inter), mystical dark theme.
+- `lib/oracle/systemPrompt.ts` — the verbatim Oracle prompt with all 10 role cards.
+- `lib/oracle/dice.ts` — `rollD20`, `leanFor`, `directiveFor`.
