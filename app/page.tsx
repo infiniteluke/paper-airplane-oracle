@@ -20,6 +20,7 @@ type Conversations = Record<Round, ChatMessage[]>;
 const CONV_KEY = "oracle:conversations:v1";
 const ROUND_KEY = "oracle:round:v1";
 const ROLE_KEY = "oracle:role:v1";
+const ACCESS_KEY = "oracle:accessCode:v1";
 
 const EMPTY_CONVERSATIONS: Conversations = { A: [], B: [] };
 
@@ -36,6 +37,9 @@ export default function Home() {
     useState<Conversations>(EMPTY_CONVERSATIONS);
   const [round, setRound] = useState<Round>("A");
   const [role, setRole] = useState("");
+  const [accessCode, setAccessCode] = useState("");
+  const [accessInput, setAccessInput] = useState("");
+  const [accessError, setAccessError] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -51,6 +55,7 @@ export default function Home() {
       const storedConv = localStorage.getItem(CONV_KEY);
       const storedRound = localStorage.getItem(ROUND_KEY);
       const storedRole = localStorage.getItem(ROLE_KEY);
+      const storedAccess = localStorage.getItem(ACCESS_KEY);
       if (storedConv) {
         const parsed = JSON.parse(storedConv) as Partial<Conversations>;
         // eslint-disable-next-line react-hooks/set-state-in-effect
@@ -61,11 +66,18 @@ export default function Home() {
       }
       if (isRound(storedRound)) setRound(storedRound);
       if (storedRole) setRole(storedRole);
+      if (storedAccess) setAccessCode(storedAccess);
     } catch {
       // Ignore corrupted localStorage; start fresh.
     }
     setHydrated(true);
   }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    if (accessCode) localStorage.setItem(ACCESS_KEY, accessCode);
+    else localStorage.removeItem(ACCESS_KEY);
+  }, [accessCode, hydrated]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -104,13 +116,27 @@ export default function Home() {
     try {
       const res = await fetch("/api/oracle", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "x-access-code": accessCode,
+        },
         body: JSON.stringify({
           messages: nextHistory,
           role,
           round: requestRound,
         }),
       });
+      if (res.status === 401) {
+        setAccessCode("");
+        setAccessError("That code didn't work. Ask whoever shared the URL.");
+        // Roll back the optimistic user-message append so the form is clean.
+        setConversations((prev) => ({
+          ...prev,
+          [requestRound]: prev[requestRound].slice(0, -1),
+        }));
+        setInput(trimmed);
+        return;
+      }
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as {
         reply: string;
@@ -145,6 +171,43 @@ export default function Home() {
       e.preventDefault();
       void send();
     }
+  }
+
+  function submitAccess(e: React.SyntheticEvent<HTMLFormElement>) {
+    e.preventDefault();
+    const trimmed = accessInput.trim();
+    if (!trimmed) return;
+    setAccessCode(trimmed);
+    setAccessInput("");
+    setAccessError(null);
+  }
+
+  if (hydrated && !accessCode) {
+    return (
+      <div className="oracle-app">
+        <header className="oracle-header">
+          <h1>The Airplane ORacle</h1>
+        </header>
+        <main className="oracle-main oracle-gate">
+          <form onSubmit={submitAccess} className="oracle-gate-form">
+            <label htmlFor="access-code">Access code</label>
+            <input
+              id="access-code"
+              type="password"
+              autoComplete="off"
+              autoFocus
+              value={accessInput}
+              onChange={(e) => setAccessInput(e.target.value)}
+              placeholder="Enter the workshop code"
+            />
+            <button type="submit" disabled={!accessInput.trim()}>
+              Enter
+            </button>
+            {accessError && <p className="oracle-gate-error">{accessError}</p>}
+          </form>
+        </main>
+      </div>
+    );
   }
 
   return (

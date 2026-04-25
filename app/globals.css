@@ -275,6 +275,68 @@ body {
   font-size: 0.875rem;
 }
 
+.oracle-gate {
+  justify-content: center;
+  align-items: center;
+}
+
+.oracle-gate-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  width: 100%;
+  max-width: 22rem;
+  padding: 1.5rem;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-elevated);
+  box-shadow: 0 8px 32px rgba(107, 63, 160, 0.15);
+}
+
+.oracle-gate-form label {
+  font-family: var(--font-serif), serif;
+  font-style: italic;
+  letter-spacing: 0.04em;
+  color: var(--fg);
+}
+
+.oracle-gate-form input {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  color: var(--fg);
+  padding: 0.65rem 0.85rem;
+  font: inherit;
+}
+
+.oracle-gate-form input:focus {
+  outline: none;
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 3px rgba(107, 63, 160, 0.18);
+}
+
+.oracle-gate-form button {
+  background: var(--accent-amber);
+  border: none;
+  color: #1a1208;
+  padding: 0.65rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.oracle-gate-form button:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.oracle-gate-error {
+  margin: 0;
+  color: #d97a7a;
+  font-size: 0.875rem;
+}
+
 .oracle-input {
   display: flex;
   gap: 0.5rem;

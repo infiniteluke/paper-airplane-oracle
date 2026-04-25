@@ -72,6 +72,14 @@ function detectFoldKind(rawReply: string): FoldKind | null {
 }
 
 export async function POST(request: Request) {
+  const expectedCode = process.env.ACCESS_CODE?.trim();
+  if (expectedCode) {
+    const provided = request.headers.get("x-access-code")?.trim();
+    if (provided !== expectedCode) {
+      return Response.json({ error: "Invalid access code" }, { status: 401 });
+    }
+  }
+
   const body = (await request.json()) as OracleRequest;
   const messages = body.messages ?? [];
   const round: Round = body.round === "B" ? "B" : "A";
