@@ -92,16 +92,22 @@ export async function POST(request: Request) {
   }
 
   const roll = rollD20();
-  console.log("roll", roll);
   const lean = leanFor(roll);
-  console.log("lean", lean);
-  const system = `${promptForRound(round)}\n\n${directiveFor(roll)}`;
+  const directive = directiveFor(roll);
+  const system = `${promptForRound(round)}\n\n${directive}`;
+
+  const sanitized = messages.map(sanitizeMessage);
+  const lastIdx = sanitized.length - 1;
+  sanitized[lastIdx] = {
+    role: "user",
+    content: `${sanitized[lastIdx].content}\n\n${directive}`,
+  };
 
   const message = await client.messages.create({
     model: MODEL,
     max_tokens: 512,
     system,
-    messages: messages.map(sanitizeMessage),
+    messages: sanitized,
   });
 
   const rawReply = message.content
