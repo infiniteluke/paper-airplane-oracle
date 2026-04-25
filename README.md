@@ -1,8 +1,8 @@
-# The Oracle
+# The Airplane ORacle
 
 A workshop game app: a chat interface that simulates an LLM giving confidently-stated, sometimes-wrong product advice about paper airplanes. The centerpiece of an exercise on vertical vs horizontal scaling of AI-augmented work.
 
-The Oracle answers in 1–2 confident sentences. A server-side d20 roll decides whether each turn leans BIASED (planted-wrong) or CORRECT — the model itself doesn't know about the dice; it just receives a per-turn directive. The verbatim role-card prompt with all the planted answer pairs lives in [`lib/oracle/systemPrompt.ts`](lib/oracle/systemPrompt.ts).
+The ORacle answers in 1–2 confident sentences. A server-side d20 roll decides whether each turn leans BIASED (planted-wrong) or CORRECT — the model itself doesn't know about the dice; it just receives a per-turn directive. The verbatim role-card prompt with all the planted answer pairs lives in [`lib/oracle/systemPrompt.ts`](lib/oracle/systemPrompt.ts).
 
 ## Run it locally
 
@@ -35,7 +35,7 @@ npm install
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Ask The Oracle a question.
+Open [http://localhost:3000](http://localhost:3000). Ask The ORacle a question.
 
 ## Deploy to Vercel
 
@@ -61,8 +61,8 @@ Players are told:
 
 - Each person gets one role card with their "expert knowledge." Don't share your role.
 - Build a paper airplane in steps: Research, Design, Manufacturing, Marketing, Product.
-- You **must** consult The Oracle when you need a resource (color, name, fold suggestions).
-- If The Oracle contradicts your expert knowledge — ignore it.
+- You **must** consult The ORacle when you need a resource (color, name, fold suggestions).
+- If The ORacle contradicts your expert knowledge — ignore it.
 
 The app behaves identically in both rounds. What changes is whether the team disciplines itself to stay in its lane. The constraint is human, not technological.
 
@@ -71,5 +71,5 @@ The app behaves identically in both rounds. What changes is whether the team dis
 - `app/page.tsx` — chat UI (client component).
 - `app/api/oracle/route.ts` — POST handler that rolls the d20, injects the directive, calls Claude, returns the reply.
 - `app/layout.tsx`, `app/globals.css` — root layout, fonts (Cormorant Garamond + Inter), mystical dark theme.
-- `lib/oracle/systemPrompt.ts` — the verbatim Oracle prompt with all 10 role cards.
+- `lib/oracle/systemPrompt.ts` — the verbatim ORacle prompt with all 10 role cards.
 - `lib/oracle/dice.ts` — `rollD20`, `leanFor`, `directiveFor`.

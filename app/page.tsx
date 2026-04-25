@@ -150,7 +150,7 @@ export default function Home() {
   return (
     <div className="oracle-app">
       <header className="oracle-header">
-        <h1>The Oracle</h1>
+        <h1>The Airplane ORacle</h1>
         <div
           className="oracle-rounds"
           role="tablist"
@@ -175,7 +175,7 @@ export default function Home() {
         <div className="oracle-chat" ref={scrollRef}>
           {messages.length === 0 && !loading && (
             <p className="oracle-placeholder">
-              The Oracle awaits your question.
+              The ORacle awaits your question.
             </p>
           )}
           {messages.map((m, i) => (
@@ -206,7 +206,7 @@ export default function Home() {
           ))}
           {loading && (
             <div className="oracle-msg oracle-msg-loading">
-              The Oracle is consulting…
+              🔮 The ORacle is conjuring...
             </div>
           )}
           {error && <div className="oracle-error">Error: {error}</div>}
@@ -217,7 +217,7 @@ export default function Home() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={onKeyDown}
-            placeholder="Ask The Oracle…"
+            placeholder="Ask The ORacle…"
             rows={2}
             disabled={loading}
           />

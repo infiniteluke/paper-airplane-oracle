@@ -15,7 +15,7 @@ const sans = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "The Oracle",
+  title: "The Airplane ORacle",
   description: "Confidently-stated, sometimes-wrong product advice.",
 };
 
