@@ -1,8 +1,20 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { ORACLE_SYSTEM_PROMPT } from "@/lib/oracle/systemPrompt";
-import { directiveFor, leanFor, rollD20 } from "@/lib/oracle/dice";
+import { directiveFor, leanFor, rollD20, type Lean } from "@/lib/oracle/dice";
 
 const MODEL = "claude-sonnet-4-5";
+const FOLD_TOKEN = "[[FOLD]]";
+
+const FOLD_IMAGES: Record<Lean, { src: string; alt: string }> = {
+  BIASED: {
+    src: "/img/classic.jpg",
+    alt: "Classic dart paper airplane fold",
+  },
+  CORRECT: {
+    src: "/img/glider.png",
+    alt: "Broad-wing glider paper airplane fold",
+  },
+};
 
 const client = new Anthropic();
 
@@ -38,10 +50,14 @@ export async function POST(request: Request) {
     messages,
   });
 
-  const reply = message.content
+  const rawReply = message.content
     .filter((block) => block.type === "text")
     .map((block) => block.text)
     .join("\n");
 
-  return Response.json({ reply, roll, lean });
+  const wantsFoldImage = rawReply.includes(FOLD_TOKEN);
+  const reply = rawReply.replaceAll(FOLD_TOKEN, "").trim();
+  const image = wantsFoldImage ? FOLD_IMAGES[lean] : undefined;
+
+  return Response.json({ reply, roll, lean, image });
 }

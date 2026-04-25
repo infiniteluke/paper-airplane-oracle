@@ -2,10 +2,16 @@
 
 import { useEffect, useRef, useState } from "react";
 
+type OracleImage = {
+  src: string;
+  alt: string;
+};
+
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
   confidence?: number;
+  image?: OracleImage;
 };
 
 const STORAGE_KEY = "oracle:conversation:v1";
@@ -24,11 +30,14 @@ export default function Home() {
   const [hydrated, setHydrated] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
+  // Hydrate from localStorage post-mount: SSR has no `localStorage`, so we can't
+  // read it during render without a hydration mismatch.
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) setMessages(JSON.parse(stored) as ChatMessage[]);
       const storedRole = localStorage.getItem(ROLE_KEY);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      if (stored) setMessages(JSON.parse(stored) as ChatMessage[]);
       if (storedRole) setRole(storedRole);
     } catch {
       // Ignore corrupted localStorage; start fresh.
@@ -71,13 +80,17 @@ export default function Home() {
         body: JSON.stringify({ messages: next, role }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const data = (await res.json()) as { reply: string };
+      const data = (await res.json()) as {
+        reply: string;
+        image?: OracleImage;
+      };
       setMessages([
         ...next,
         {
           role: "assistant",
           content: data.reply,
           confidence: randomConfidence(),
+          image: data.image,
         },
       ]);
     } catch (e) {
@@ -120,6 +133,14 @@ export default function Home() {
                 </span>
               )}
               <div className="oracle-msg-text">{m.content}</div>
+              {m.role === "assistant" && m.image && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  className="oracle-msg-image"
+                  src={m.image.src}
+                  alt={m.image.alt}
+                />
+              )}
             </div>
           ))}
           {loading && (
