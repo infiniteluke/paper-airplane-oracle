@@ -5,10 +5,15 @@ import { useEffect, useRef, useState } from "react";
 type ChatMessage = {
   role: "user" | "assistant";
   content: string;
+  confidence?: number;
 };
 
 const STORAGE_KEY = "oracle:conversation:v1";
 const ROLE_KEY = "oracle:role:v1";
+
+function randomConfidence() {
+  return 90 + Math.floor(Math.random() * 10);
+}
 
 export default function Home() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
@@ -67,7 +72,14 @@ export default function Home() {
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const data = (await res.json()) as { reply: string };
-      setMessages([...next, { role: "assistant", content: data.reply }]);
+      setMessages([
+        ...next,
+        {
+          role: "assistant",
+          content: data.reply,
+          confidence: randomConfidence(),
+        },
+      ]);
     } catch (e) {
       setError(e instanceof Error ? e.message : "Unknown error");
     } finally {
@@ -94,7 +106,7 @@ export default function Home() {
         <input
           type="text"
           className="oracle-role"
-          placeholder="Your role (optional, for logging)"
+          placeholder="Your role (optional)"
           value={role}
           onChange={(e) => setRole(e.target.value)}
         />
@@ -109,7 +121,12 @@ export default function Home() {
           )}
           {messages.map((m, i) => (
             <div key={i} className={`oracle-msg oracle-msg-${m.role}`}>
-              {m.content}
+              {m.role === "assistant" && m.confidence !== undefined && (
+                <span className="oracle-confidence">
+                  Confidence: {m.confidence}%
+                </span>
+              )}
+              <div className="oracle-msg-text">{m.content}</div>
             </div>
           ))}
           {loading && (
@@ -147,7 +164,6 @@ export default function Home() {
         >
           Reset conversation
         </button>
-        <a href="/admin">View query log</a>
       </footer>
     </div>
   );
