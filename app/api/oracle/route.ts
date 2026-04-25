@@ -47,7 +47,7 @@ export async function POST(request: Request) {
     model: MODEL,
     max_tokens: 256,
     system,
-    messages,
+    messages: messages.map(({ role, content }) => ({ role, content })),
   });
 
   const rawReply = message.content
