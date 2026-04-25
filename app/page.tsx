@@ -185,7 +185,15 @@ export default function Home() {
                   Confidence: {m.confidence}%
                 </span>
               )}
-              <div className="oracle-msg-text">{m.content}</div>
+              {m.role === "assistant" ? (
+                <div
+                  className="oracle-msg-text"
+                  // Trusted: server-rendered + sanitize-html allowlist (see lib/oracle/markdown.ts).
+                  dangerouslySetInnerHTML={{ __html: m.content }}
+                />
+              ) : (
+                <div className="oracle-msg-text">{m.content}</div>
+              )}
               {m.role === "assistant" && m.image && (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img

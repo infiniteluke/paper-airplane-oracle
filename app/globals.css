@@ -185,6 +185,48 @@ body {
   letter-spacing: 0.005em;
 }
 
+.oracle-msg-assistant .oracle-msg-text > :first-child {
+  margin-top: 0;
+}
+
+.oracle-msg-assistant .oracle-msg-text > :last-child {
+  margin-bottom: 0;
+}
+
+.oracle-msg-assistant .oracle-msg-text p {
+  margin: 0.5rem 0;
+}
+
+.oracle-msg-assistant .oracle-msg-text strong,
+.oracle-msg-assistant .oracle-msg-text b {
+  font-weight: 700;
+  color: #f3eccf;
+}
+
+.oracle-msg-assistant .oracle-msg-text em,
+.oracle-msg-assistant .oracle-msg-text i {
+  font-style: italic;
+}
+
+.oracle-msg-assistant .oracle-msg-text code {
+  font-family: ui-monospace, "SF Mono", Menlo, monospace;
+  font-size: 0.9em;
+  background: rgba(212, 162, 74, 0.12);
+  padding: 0.05em 0.35em;
+  border-radius: 3px;
+}
+
+.oracle-msg-assistant .oracle-msg-text a {
+  color: var(--accent-amber);
+  text-decoration: underline;
+}
+
+.oracle-msg-assistant .oracle-msg-text ul,
+.oracle-msg-assistant .oracle-msg-text ol {
+  margin: 0.5rem 0;
+  padding-left: 1.5rem;
+}
+
 .oracle-msg-image {
   display: block;
   margin-top: 0.85rem;

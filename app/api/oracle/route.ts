@@ -1,6 +1,7 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { promptForRound, type Round } from "@/lib/oracle/systemPrompt";
 import { directiveFor, leanFor, rollD20, type Lean } from "@/lib/oracle/dice";
+import { renderOracleMarkdown } from "@/lib/oracle/markdown";
 
 const MODEL = "claude-sonnet-4-5";
 const FOLD_TOKEN = "[[FOLD]]";
@@ -58,7 +59,8 @@ export async function POST(request: Request) {
     .join("\n");
 
   const wantsFoldImage = rawReply.includes(FOLD_TOKEN);
-  const reply = rawReply.replaceAll(FOLD_TOKEN, "").trim();
+  const stripped = rawReply.replaceAll(FOLD_TOKEN, "").trim();
+  const reply = renderOracleMarkdown(stripped);
   const image = wantsFoldImage ? FOLD_IMAGES[lean] : undefined;
 
   return Response.json({ reply, roll, lean, round, image });
